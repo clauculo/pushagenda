@@ -32,6 +32,9 @@
     "doctrine/reflection": {
         "version": "v1.0.0"
     },
+    "larapack/dd": {
+        "version": "1.1"
+    },
     "psr/cache": {
         "version": "1.0.1"
     },

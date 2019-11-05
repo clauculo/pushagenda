@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        {% block stylesheets %}{% endblock %}
+    </head>
+    <body>
+        Welkom Wizard gebruiker!<br>
+        Jouw kleur is: {{card_color}}
+        Jouw nar is: {{card_is_nar}}
+        {% block body %}{% endblock %}
+        {% block javascripts %}{% endblock %}
+    </body>
+</html>
