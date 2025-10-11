@@ -22,6 +22,13 @@ RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available
         AllowOverride All\n\
     </Directory>' >> /etc/apache2/apache2.conf
 
+# Install Composer globally
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# Install PHP dependencies
+RUN composer install --prefer-dist --no-dev --no-scripts --no-progress && \
+    composer dump-autoload --optimize
+
 # Expose HTTP port
 EXPOSE 80
 
