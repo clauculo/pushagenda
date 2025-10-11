@@ -26,7 +26,7 @@ RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available
 EXPOSE 80
 
 # Use production PHP settings (you can also use php.ini-development)
-COPY ./php.ini-production /usr/local/etc/php/php.ini
+#COPY ./php.ini-production /usr/local/etc/php/php.ini
 
 # Set proper file permissions
 RUN chown -R www-data:www-data /var/www/html
