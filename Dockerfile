@@ -26,7 +26,7 @@ RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Install PHP dependencies
-RUN composer install --prefer-dist --no-dev --optimize-autoloader;
+RUN composer install
 
 # Expose HTTP port
 EXPOSE 80
