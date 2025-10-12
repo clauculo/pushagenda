@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geheime Portal</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(120deg, #1a1a2e, #162447);
+            color: #ffffff;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        h1 {
+            font-size: 2em;
+            color: #ff6f61;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px #000;
+        }
+
+        #portal-input {
+            padding: 10px;
+            font-size: 18px;
+            width: 300px;
+            border-radius: 10px;
+            border: none;
+            outline: none;
+            text-align: center;
+        }
+
+        #submit-btn {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 18px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            background-color: #ffcc00;
+            color: #000;
+            transition: all 0.2s ease;
+        }
+
+        #submit-btn:hover {
+            background-color: #ffeb3b;
+        }
+
+        #response {
+            margin-top: 30px;
+            font-size: 20px;
+            min-height: 50px;
+            color: #00ffcc;
+            text-shadow: 1px 1px #000;
+        }
+
+        /* Spannende animatie */
+        @keyframes glow {
+            0% { text-shadow: 0 0 5px #00ffcc, 0 0 10px #00ffcc; }
+            50% { text-shadow: 0 0 20px #00ffcc, 0 0 30px #00ffcc; }
+            100% { text-shadow: 0 0 5px #00ffcc, 0 0 10px #00ffcc; }
+        }
+
+        #response {
+            animation: glow 1s infinite alternate;
+        }
+    </style>
+</head>
+<body>
+
+<h1>🌌 Geheime Portal 🌌</h1>
+<input type="text" id="portal-input" placeholder="Voer hier je vraag of code in">
+<button id="submit-btn">Verstuur</button>
+<div id="response"></div>
+
+<script>
+    const antwoorden = [
+        "Hmm... dat is een mysterie 🌀",
+        "De sterren zeggen iets anders ✨",
+        "Wie weet... misschien jij? 🤔",
+        "Er ligt een geheime deur daar 🗝️",
+        "Oeh, spannend! Maar het blijft een raadsel 😶",
+        "Dat klinkt als een avontuur! 🏰",
+        "Ssst... geheim! 🤫",
+        "Je voelt iets... maar kan het niet precies zeggen 🌫️",
+        "Misschien morgen, misschien nooit 🕰️",
+        "De portal lacht naar je 😼"
+    ];
+
+    const input = document.getElementById('portal-input');
+    const btn = document.getElementById('submit-btn');
+    const response = document.getElementById('response');
+
+    btn.addEventListener('click', () => {
+        const value = input.value.trim();
+        if(value === "") {
+            response.innerText = "Typ iets, je durft toch wel? 🕵️‍♂️";
+            return;
+        }
+
+        // Kies random antwoord
+        const antwoord = antwoorden[Math.floor(Math.random() * antwoorden.length)];
+
+        // Toon antwoord
+        response.innerText = antwoord;
+
+        // Maak input leeg
+        input.value = "";
+    });
+</script>
+
+</body>
+</html>
