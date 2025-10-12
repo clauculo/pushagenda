@@ -22,4 +22,9 @@ class indexController extends AbstractController
     {
         return $this->render('index3.html.twig');
     }
+    #[Route('/daphne', name: 'daphne.get')]
+    public function daphne()
+    {
+        return $this->render('index2.html.twig');
+    }
 }
