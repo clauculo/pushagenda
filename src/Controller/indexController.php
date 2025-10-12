@@ -12,9 +12,14 @@ class indexController extends AbstractController
     {
         return $this->render('index2.html.twig');
     }
-    #[Route(path: '/test', name: 'index2.get', methods: ['GET'])]
+    #[Route('/test{trailingSlash}', name: 'test', requirements: ['trailingSlash' => '/?'])]
     public function index2()
     {
         return $this->render('index2.html.twig');
+    }
+    #[Route('/wouter', name: 'wouter', requirements: ['trailingSlash' => '/?'])]
+    public function wouter()
+    {
+        return $this->render('index3.html.twig');
     }
 }
