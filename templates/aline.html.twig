@@ -1,156 +1,172 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Leuke Quiz Game</title>
-<style>
-body {
-    margin: 0;
-    font-family: 'Arial', sans-serif;
-    background: linear-gradient(135deg, #f6d365, #fda085);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    color: #333;
-  }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leuke Quiz Game</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #f6d365, #fda085);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #333;
+        }
 
-  .quiz-container {
-    background: #fff;
-    border-radius: 20px;
-    padding: 30px;
-    width: 90%;
-    max-width: 500px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-    text-align: center;
-  }
+        .quiz-container {
+            background: #fff;
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            text-align: center;
+        }
 
-  h1 {
-    color: #ff6f61;
-}
+        h1 {
+            color: #ff6f61;
+        }
 
-  button {
-    background: #ffcc00;
-    border: none;
-    padding: 10px 20px;
-    margin: 10px;
-    border-radius: 10px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: all 0.2s ease;
-  }
+        button {
+            background: #ffcc00;
+            border: none;
+            padding: 10px 20px;
+            margin: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s ease;
+        }
 
-  button:hover {
-    background: #ffeb3b;
-}
+        button:hover {
+            background: #ffeb3b;
+        }
 
-  #score {
-    font-size: 18px;
-    margin: 15px 0;
-  }
+        #score {
+            font-size: 18px;
+            margin: 15px 0;
+        }
 
-  #crown {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 200px;
-    display: none;
-    pointer-events: none;
-    animation: pop 1s ease forwards;
-  }
+        #crown {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 200px;
+            display: none;
+            pointer-events: none;
+            animation: pop 1s ease forwards;
+        }
 
-  @keyframes pop {
-    0% { transform: translate(-50%, -50%) scale(0.1); }
-    70% { transform: translate(-50%, -50%) scale(1.2); }
-    100% { transform: translate(-50%, -50%) scale(1); }
-  }
-</style>
+        @keyframes pop {
+            0% { transform: translate(-50%, -50%) scale(0.1); }
+            70% { transform: translate(-50%, -50%) scale(1.2); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+    </style>
 </head>
 <body>
 
 <div class="quiz-container">
-  <h1>Leuke Quiz!</h1>
-  <div id="question">Vraag komt hier</div>
-  <div id="buttons"></div>
-  <div id="score">Score: 0</div>
+    <h1>Leuke Quiz!</h1>
+    <div id="question">Vraag komt hier</div>
+    <div id="buttons"></div>
+    <div id="score">Score: 0</div>
 </div>
 
 <div id="crown">👑</div>
 
 <script>
-const quiz = [
-  {
-      question: "Wat is 2 + 2?",
-    answers: ["3", "4", "5"],
-    correct: 1
-  },
-  {
-      question: "Wat zegt een kat als hij tevreden is?",
-    answers: ["Miauw", "Woef", "Kwak"],
-    correct: 0
-  },
-  {
-      question: "Waarom stak de kip de weg over?",
-    answers: ["Om naar de overkant te gaan", "Omdat het regende", "Om een grap te maken"],
-    correct: 2
-  },
-  {
-      question: "Wat is de kleur van een banaan?",
-    answers: ["Blauw", "Geel", "Paars"],
-    correct: 1
-  },
-  {
-      question: "Hoe noem je een groep katten?",
-    answers: ["Een roedel", "Een bende", "Een kliekje"],
-    correct: 2
-  }
-];
+    const quiz = [
+        { question: "Wat is 2 + 2?", answers: ["3", "4", "5"], correct: 1 },
+        { question: "Wat zegt een kat als hij tevreden is?", answers: ["Miauw", "Woef", "Kwak"], correct: 0 },
+        { question: "Waarom stak de kip de weg over?", answers: ["Om naar de overkant te gaan", "Omdat het regende", "Om een grap te maken"], correct: 2 },
+        { question: "Wat is de kleur van een banaan?", answers: ["Blauw", "Geel", "Paars"], correct: 1 },
+        { question: "Hoe noem je een groep katten?", answers: ["Een roedel", "Een bende", "Een kliekje"], correct: 2 },
 
-let currentQuestion = 0;
-let score = 0;
+        // 10 extra vragen
+        { question: "Wat zegt een koe?", answers: ["Miauw", "Boeeh", "Woef"], correct: 1 },
+        { question: "Hoeveel poten heeft een spin?", answers: ["6", "8", "10"], correct: 1 },
+        { question: "Wat doet een schaap?", answers: ["Blaat", "Kwak", "Roep"], correct: 0 },
+        { question: "Wat is typisch Nederlands?", answers: ["Molens", "Piramides", "Kangoeroes"], correct: 0 },
+        { question: "Wat is 5 x 5?", answers: ["25", "10", "55"], correct: 0 },
+        { question: "Wat zit boven op je hoofd?", answers: ["Schoenen", "Haar", "Tafel"], correct: 1 },
+        { question: "Hoe noem je een baby hond?", answers: ["Puppy", "Kitten", "Calf"], correct: 0 },
+        { question: "Wat is het tegenovergestelde van groot?", answers: ["Klein", "Lang", "Breed"], correct: 0 },
+        { question: "Wat drinkt een koe?", answers: ["Water", "Melk", "Sinaasappelsap"], correct: 0 },
+        { question: "Wat is een grap?", answers: ["Lachen", "Eten", "Slapen"], correct: 0 }
+    ];
 
-function showQuestion() {
-    const q = quiz[currentQuestion];
-    document.getElementById('question').innerText = q.question;
+    let currentQuestion = 0;
+    let score = 0;
 
-    const buttonsDiv = document.getElementById('buttons');
-    buttonsDiv.innerHTML = '';
-    q.answers.forEach((ans, i) => {
-        const btn = document.createElement('button');
-        btn.innerText = ans;
-        btn.onclick = () => checkAnswer(i);
-    buttonsDiv.appendChild(btn);
-  });
-}
+    function showQuestion() {
+        const q = quiz[currentQuestion];
+        document.getElementById('question').innerText = q.question;
 
-function checkAnswer(selected) {
-    const q = quiz[currentQuestion];
-    if (selected === q.correct) {
-        score += 10; // 10 punten per goed antwoord
-        alert("Goed gedaan! 😺 +10 punten");
-    } else {
-        alert("Oeps, dat was niet goed 😹");
+        const buttonsDiv = document.getElementById('buttons');
+        buttonsDiv.innerHTML = '';
+        q.answers.forEach((ans, i) => {
+            const btn = document.createElement('button');
+            btn.innerText = ans;
+            btn.onclick = () => checkAnswer(i);
+            buttonsDiv.appendChild(btn);
+        });
     }
 
-    document.getElementById('score').innerText = `Score: ${score}`;
-    currentQuestion++;
+    function checkAnswer(selected) {
+        const q = quiz[currentQuestion];
+        if (selected === q.correct) {
+            score += 10;
+            alert("Goed gedaan! 😺 +10 punten");
+        } else {
+            alert("Oeps, dat was niet goed 😹");
+        }
 
-    if (currentQuestion < quiz.length) {
+        document.getElementById('score').innerText = `Score: ${score}`;
+        currentQuestion++;
+
+        if (currentQuestion < quiz.length) {
+            showQuestion();
+        } else {
+            endQuiz();
+        }
+    }
+
+    function endQuiz() {
+        document.querySelector('.quiz-container').style.display = 'none';
+        const crown = document.getElementById('crown');
+        crown.style.display = 'block';
+
+        // Voeg herstartknop toe
+        const restartBtn = document.createElement('button');
+        restartBtn.innerText = "Opnieuw spelen";
+        restartBtn.style.position = 'fixed';
+        restartBtn.style.top = '80%';
+        restartBtn.style.left = '50%';
+        restartBtn.style.transform = 'translateX(-50%)';
+        restartBtn.style.fontSize = '24px';
+        restartBtn.onclick = restartQuiz;
+        document.body.appendChild(restartBtn);
+    }
+
+    function restartQuiz() {
+        currentQuestion = 0;
+        score = 0;
+        document.getElementById('score').innerText = `Score: 0`;
+        document.querySelector('.quiz-container').style.display = 'block';
+        document.getElementById('crown').style.display = 'none';
+        document.querySelectorAll('button').forEach(btn => {
+            if (btn.innerText === "Opnieuw spelen") btn.remove();
+        });
         showQuestion();
-    } else {
-        endQuiz();
     }
-}
 
-function endQuiz() {
-    document.querySelector('.quiz-container').style.display = 'none';
-    const crown = document.getElementById('crown');
-    crown.style.display = 'block';
-}
-
-showQuestion();
+    // Start de quiz
+    showQuestion();
 </script>
 
 </body>
