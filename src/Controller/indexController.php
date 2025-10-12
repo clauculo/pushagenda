@@ -27,4 +27,9 @@ class indexController extends AbstractController
     {
         return $this->render('index2.html.twig');
     }
+    #[Route('/aline', name: 'aline.get')]
+    public function aline()
+    {
+        return $this->render('aline.html.twig');
+    }
 }
