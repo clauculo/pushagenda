@@ -27,7 +27,7 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 
 # Install PHP dependencies
 RUN composer install --prefer-dist --optimize-autoloader
-RUN composer run-script post-install-cmd
+RUN composer dump-autoload --optimize
 
 # Expose HTTP port
 EXPOSE 80
