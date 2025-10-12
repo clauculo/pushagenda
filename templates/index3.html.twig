@@ -1,1 +1,34 @@
-Hallo Wouter!
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mouse Reactive Background</title>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        body {
+            background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), hsl(var(--hue, 0), 70%, 50%), #000);
+            transition: background 0.1s;
+        }
+    </style>
+</head>
+<body>
+<script>
+    document.addEventListener('mousemove', (e) => {
+        const x = (e.clientX / window.innerWidth) * 100;
+        const y = (e.clientY / window.innerHeight) * 100;
+        const hue = Math.floor(x + y); // Change hue based on mouse position
+
+        document.body.style.setProperty('--x', x + '%');
+        document.body.style.setProperty('--y', y + '%');
+        document.body.style.setProperty('--hue', hue);
+    });
+</script>
+
+</body>
+</html>
