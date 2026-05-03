@@ -27,6 +27,18 @@ class indexController extends AbstractController
     {
         return $this->render('index2.html.twig');
     }
+    #[Route('/daphne_name', name: 'daphne_game.get')]
+    public function daphneGame()
+    {
+        return $this->render('daphne_game.html.twig');
+    }
+
+    #[Route('/lisanne_name', name: 'lisanne_game.get')]
+    public function lisanneGame()
+    {
+        return $this->render('lisanne_game.html.twig');
+    }
+
     #[Route('/aline', name: 'aline.get')]
     public function aline()
     {
@@ -36,5 +48,10 @@ class indexController extends AbstractController
     public function daphne2()
     {
         return $this->render('daphne.html.twig');
+    }
+    #[Route('/pushagenda', name: 'pushagenda.get')]
+    public function pushagenda()
+    {
+        return $this->render('pushagenda.html.twig');
     }
 }

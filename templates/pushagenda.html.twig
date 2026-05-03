@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PushAgenda</title>
+    <style>
+        /* Algemene stijl */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: "Poppins", sans-serif;
+            background: #f5f7fa;
+            overflow-x: hidden;
+        }
+
+        /* --- Titelbalk --- */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #14213d;
+            color: white;
+            padding: 10px 20px;
+            height: 10vh;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .logo img {
+            height: 40px;
+            width: 40px;
+            background: #ffffff33;
+            border-radius: 8px;
+        }
+        .logo h1 {
+            font-family: "Poppins", sans-serif;
+            font-size: 1.6em;
+            margin: 0;
+            color: #fca311;
+        }
+        .menu-icon {
+            font-size: 1.8em;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        /* --- Hamburger Menu --- */
+        .menu {
+            position: fixed;
+            top: 10vh;
+            right: 0;
+            background: rgba(20,33,61,0.95);
+            width: 220px;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            color: white;
+            padding: 10px 0;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+        }
+        .menu.open { transform: translateX(0); }
+        .menu a {
+            display: block;
+            padding: 12px 20px;
+            color: white;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+        .menu a:hover {
+            background: rgba(252,163,17,0.3);
+        }
+
+        /* --- Introsectie --- */
+        .intro {
+            padding: 20px;
+            text-align: center;
+            color: #14213d;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .intro h2 {
+            font-size: 1.8em;
+            color: #fca311;
+        }
+        .intro p {
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+
+        /* --- Balken --- */
+        .bar {
+            width: 100%;
+            height: 20vh;
+            overflow-x: auto;
+            white-space: nowrap;
+            box-sizing: border-box;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            transition: opacity 0.5s ease;
+        }
+
+        /* Balk kleuren */
+        #bar1 { background: #264653; }
+        #bar2 { background: #2a9d8f; opacity: 0; }
+        #bar3 { background: #457b9d; opacity: 0; }
+        #bar4 { background: #1d3557; opacity: 0; }
+        #bar5 { background: #e9ecef; color: #000; opacity: 0; overflow-y: auto; }
+
+        /* --- Glass effect knoppen --- */
+        .item {
+            display: inline-flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100px;
+            min-width: 160px;
+            margin: 0 12px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(8px);
+            color: white;
+            font-size: 1.1em;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .item:hover {
+            background: rgba(255, 255, 255, 0.35);
+            transform: scale(1.05);
+        }
+        .item.selected {
+            background: rgba(255, 255, 255, 0.6);
+            color: #14213d;
+        }
+
+        /* Subtiel pijltje onder knop */
+        .item::after {
+            content: "";
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 10px solid rgba(255,255,255,0.6);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .item.selected::after {
+            opacity: 1;
+        }
+
+        /* --- Abonneren knop --- */
+        .button-large {
+            font-size: 1.4em;
+            padding: 12px 24px;
+            background: rgba(255,255,255,0.4);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            backdrop-filter: blur(6px);
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .button-large:hover {
+            background: rgba(255,255,255,0.6);
+            color: #14213d;
+        }
+    </style>
+</head>
+<body>
+<!-- Titelbalk -->
+<header>
+    <div class="logo">
+        <img src="#" alt="Logo" />
+        <h1>PushAgenda</h1>
+    </div>
+    <div class="menu-icon" id="menuToggle">☰</div>
+</header>
+
+<!-- Menu -->
+<nav class="menu" id="menu">
+    <a href="#">Uitleg</a>
+    <a href="#">Mijn abonnementen</a>
+    <a href="#">Contact</a>
+</nav>
+
+<!-- Intro -->
+<section class="intro">
+    <h2>Welkom bij PushAgenda</h2>
+    <p>
+        Eenvoudige navigatie, helder overzicht, en altijd op de hoogte van jouw favoriete sporten.
+        Kies je sport, competitie en categorie, en abonneer je op de wedstrijden die jij wilt volgen.
+        <strong>Mis nooit meer een wedstrijd!</strong>
+    </p>
+</section>
+
+<!-- Balken -->
+<div id="bar1" class="bar"></div>
+<div id="bar2" class="bar"></div>
+<div id="bar3" class="bar"></div>
+<div id="bar4" class="bar">
+    <button id="subscribeBtn" class="button-large">Abonneer op feed</button>
+</div>
+<div id="bar5" class="bar">
+    <ul id="eventList"></ul>
+</div>
+
+<script>
+    /* Data */
+    const sporten = ["Voetbal", "Wielrennen", "Tennis", "Basketbal", "Atletiek"];
+    const competities = {
+        "Voetbal": ["WK", "EK", "WK U18", "EK U16", "Champions League"],
+        "Wielrennen": ["WK", "EK", "Klassiekers", "Rondes", "Tour de France"],
+        "Tennis": ["Grand Slam", "ATP 1000", "WTA 1000"],
+        "Basketbal": ["EuroLeague", "NBA", "Nederlandse Beker"],
+        "Atletiek": ["WK", "EK", "Diamond League"]
+    };
+    const categorieën = ["Mannen", "Vrouwen", "Junioren Mannen", "Junioren Vrouwen"];
+
+    let geselecteerdeSport = null;
+    let geselecteerdeCompetitie = null;
+    let geselecteerdeCategorie = null;
+    const opgeslagenFeeds = [];
+
+    /* Menu toggle */
+    const menu = document.getElementById("menu");
+    document.getElementById("menuToggle").onclick = () => menu.classList.toggle("open");
+
+    /* Vul balken */
+    function vulBar1() {
+        const bar1 = document.getElementById("bar1");
+        sporten.forEach(s => {
+            const el = document.createElement("div");
+            el.className = "item";
+            el.textContent = s;
+            el.onclick = () => {
+                geselecteerdeSport = s;
+                selecteerInBar(bar1, el);
+                toonBalk("bar2");
+                vulBar2();
+            };
+            bar1.appendChild(el);
+        });
+    }
+
+    function vulBar2() {
+        const bar2 = document.getElementById("bar2");
+        bar2.innerHTML = "";
+        (competities[geselecteerdeSport] || []).forEach(c => {
+            const el = document.createElement("div");
+            el.className = "item";
+            el.textContent = c;
+            el.onclick = () => {
+                geselecteerdeCompetitie = c;
+                selecteerInBar(bar2, el);
+                toonBalk("bar3");
+                vulBar3();
+            };
+            bar2.appendChild(el);
+        });
+    }
+
+    function vulBar3() {
+        const bar3 = document.getElementById("bar3");
+        bar3.innerHTML = "";
+        categorieën.forEach(cat => {
+            const el = document.createElement("div");
+            el.className = "item";
+            el.textContent = cat;
+            el.onclick = () => {
+                geselecteerdeCategorie = cat;
+                selecteerInBar(bar3, el);
+                toonBalk("bar4");
+                toonBalk("bar5");
+                laadEvenementen();
+            };
+            bar3.appendChild(el);
+        });
+    }
+
+    function selecteerInBar(bar, el) {
+        Array.from(bar.children).forEach(child => child.classList.remove("selected"));
+        el.classList.add("selected");
+    }
+
+    /* Toon balk (na selectie) */
+    function toonBalk(id) {
+        const el = document.getElementById(id);
+        el.style.opacity = 1;
+    }
+
+    /* Abonneer knop */
+    document.getElementById("subscribeBtn").onclick = () => {
+        if (!geselecteerdeSport || !geselecteerdeCompetitie || !geselecteerdeCategorie) {
+            alert("Kies eerst een sport, competitie en categorie.");
+            return;
+        }
+        const feed = {
+            sport: geselecteerdeSport,
+            competitie: geselecteerdeCompetitie,
+            categorie: geselecteerdeCategorie,
+            aangemaakt: new Date().toISOString()
+        };
+        opgeslagenFeeds.push(feed);
+        console.log("Opgeslagen feeds:", opgeslagenFeeds);
+        alert(`Je bent geabonneerd op ${geselecteerdeSport} / ${geselecteerdeCompetitie} / ${geselecteerdeCategorie}`);
+    };
+
+    /* Dummy evenementen laden */
+    function laadEvenementen() {
+        const lijst = document.getElementById("eventList");
+        lijst.innerHTML = "";
+        for (let i = 1; i <= 5; i++) {
+            const li = document.createElement("li");
+            li.textContent = `${geselecteerdeSport} - ${geselecteerdeCompetitie} - ${geselecteerdeCategorie} | Evenement ${i}`;
+            lijst.appendChild(li);
+        }
+    }
+
+    /* Start */
+    window.onload = vulBar1;
+</script>
+</body>
+</html>

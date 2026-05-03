@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>🐻‍❄️ IJsbeer Runner – Noordpool</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #000; overflow: hidden; font-family: 'Segoe UI', Tahoma, sans-serif; }
+    canvas { display: block; }
+
+    .overlay {
+      position: fixed; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 20;
+    }
+    .panel {
+      background: linear-gradient(145deg, rgba(5,15,45,0.97), rgba(0,25,70,0.97));
+      border: 3px solid #66bbff;
+      border-radius: 24px;
+      padding: 36px 40px;
+      text-align: center;
+      color: #fff;
+      max-width: 520px;
+      width: 92vw;
+      box-shadow: 0 0 50px rgba(80,180,255,0.5), inset 0 0 30px rgba(80,180,255,0.08);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    h1 { font-size: clamp(2rem,5vw,2.8rem); color: #88ddff; text-shadow: 0 0 20px #44aaff; margin-bottom: 10px; }
+    h2 { font-size: clamp(1.6rem,4vw,2.2rem); color: #88ddff; margin-bottom: 14px; }
+    .sub { font-size: 1rem; color: #99bbdd; margin-bottom: 18px; line-height: 1.75; }
+    .big-btn {
+      background: linear-gradient(135deg, #0d5ec4, #0038a8);
+      border: 2px solid #66bbff;
+      border-radius: 50px;
+      color: #fff;
+      font-size: 1.35rem;
+      font-weight: 700;
+      padding: 14px 50px;
+      cursor: pointer;
+      margin-top: 14px;
+      transition: transform 0.15s, box-shadow 0.15s;
+      box-shadow: 0 4px 20px rgba(80,160,255,0.4);
+    }
+    .big-btn:hover  { transform: scale(1.06); box-shadow: 0 6px 28px rgba(80,160,255,0.65); }
+    .big-btn:active { transform: scale(0.97); }
+    .score-big {
+      font-size: clamp(3rem,8vw,4.5rem);
+      font-weight: 900;
+      color: #ffdd44;
+      text-shadow: 0 0 24px #ffaa00;
+      margin: 8px 0 4px;
+    }
+    .lb-table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+    .lb-table th {
+      background: rgba(80,160,255,0.18); padding: 7px 10px;
+      font-size: 0.88rem; color: #88ccff; border-bottom: 1px solid #3a5880;
+    }
+    .lb-table td {
+      padding: 7px 10px; font-size: 0.97rem;
+      color: #cce4ff; border-bottom: 1px solid rgba(80,160,255,0.1);
+    }
+    .lb-table tr.hl td { color: #ffdd44; font-weight: 700; }
+    #name-input {
+      background: rgba(255,255,255,0.08);
+      border: 2px solid #66bbff; border-radius: 12px;
+      color: #fff; font-size: 1.25rem;
+      padding: 11px 18px; margin: 10px 0 4px;
+      width: 100%; text-align: center; outline: none;
+    }
+    #name-input::placeholder { color: #4a7090; }
+    .hidden { display: none !important; }
+
+    #touch-ctrl {
+      position: fixed; bottom: 28px; left: 0; right: 0;
+      display: flex; justify-content: space-between;
+      padding: 0 28px; z-index: 10; pointer-events: none;
+    }
+    .tbtn {
+      pointer-events: all;
+      background: rgba(80,160,255,0.22);
+      border: 2px solid rgba(140,210,255,0.45);
+      border-radius: 50%;
+      width: 72px; height: 72px;
+      font-size: 1.9rem; color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.1s;
+    }
+    .tbtn:active { background: rgba(80,160,255,0.55); }
+    @media (hover: hover) { #touch-ctrl { display: none; } }
+  </style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div id="touch-ctrl">
+  <button class="tbtn" id="tl">◀</button>
+  <button class="tbtn" id="tr">▶</button>
+</div>
+
+<!-- Menu -->
+<div class="overlay" id="ov-menu">
+  <div class="panel">
+    <h1>🐻‍❄️ IJsbeer Runner</h1>
+    <p class="sub">
+      Beweeg de ijsbeer links en rechts!<br>
+      🧊 Ontwijkt <b>ijsbergen</b> — anders bevriest je scherm<br>
+      🦭 Verzamel <b>zeehonden</b> voor <b>+10 punten</b>
+    </p>
+    <p class="sub" style="font-size:0.9rem">
+      <b>⬅ ➡</b> of <b>A / D</b> toetsen &nbsp;|&nbsp; Spatie / Enter om te starten
+    </p>
+    <button class="big-btn" id="btn-start">▶ Spelen!</button>
+  </div>
+</div>
+
+<!-- Name entry -->
+<div class="overlay hidden" id="ov-name">
+  <div class="panel">
+    <h2>🏆 Top 10!</h2>
+    <p class="sub">Je staat in de top 10!<br>Voer je naam in:</p>
+    <input id="name-input" type="text" maxlength="14" placeholder="Jouw naam…" autocomplete="off" />
+    <button class="big-btn" id="btn-submit">Opslaan 💾</button>
+  </div>
+</div>
+
+<!-- Game over + leaderboard -->
+<div class="overlay hidden" id="ov-over">
+  <div class="panel">
+    <h2>🥶 Bevroren!</h2>
+    <div class="score-big" id="final-score">0</div>
+    <p class="sub" style="margin:0 0 16px">punten</p>
+    <h3 style="color:#88ddff;margin-bottom:10px">🏆 Top 10 Scores</h3>
+    <table class="lb-table">
+      <thead><tr><th>#</th><th>Naam</th><th>Punten</th></tr></thead>
+      <tbody id="lb-body"></tbody>
+    </table>
+    <button class="big-btn" id="btn-restart">🔄 Opnieuw!</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ── Canvas ─────────────────────────────────────────────────────────────────
+const canvas = document.getElementById('c');
+const ctx    = canvas.getContext('2d');
+let W, H, HORIZON_Y, GROUND_Y, FOCAL, MAX_Z, LANE_X;
+
+function resize() {
+  W = canvas.width  = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+  HORIZON_Y = H * 0.34;
+  GROUND_Y  = H * 0.87;
+  FOCAL     = H * 0.45;
+  MAX_Z     = 720;
+  const lw  = Math.min(W * 0.21, 195);
+  LANE_X    = [-lw, 0, lw];
+  regenStars();
+  regenIce();
+}
+window.addEventListener('resize', resize);
+
+// ── Seeded RNG ─────────────────────────────────────────────────────────────
+function makeRng(seed) {
+  return () => {
+    seed = (seed + 0x6D2B79F5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = t + Math.imul(t ^ (t >>> 7), 61 | t) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// ── Projection ─────────────────────────────────────────────────────────────
+function proj(wx, wz) {
+  wz = Math.max(wz, 1);
+  const s = FOCAL / (FOCAL + wz);
+  return { x: W/2 + wx*s, y: GROUND_Y - (GROUND_Y - HORIZON_Y)*(1-s), s };
+}
+
+// ── Stars ──────────────────────────────────────────────────────────────────
+let stars = [];
+function regenStars() {
+  stars = Array.from({length:170}, () => ({
+    fx: Math.random(), fy: Math.random(),
+    r:  0.5 + Math.random()*1.6,
+    ph: Math.random()*Math.PI*2,
+  }));
+}
+
+// ── Snowflakes ─────────────────────────────────────────────────────────────
+let flakes = [];
+function regenFlakes() {
+  flakes = Array.from({length:55}, () => ({
+    x:  Math.random(), y:  Math.random(),
+    r:  0.8 + Math.random()*2,
+    sp: 0.4 + Math.random()*1.0,
+    dr: (Math.random()-0.5)*0.3,
+  }));
+}
+
+// ── Ice shards ─────────────────────────────────────────────────────────────
+let iceShards = [];
+function regenIce() {
+  const rng = makeRng(777);
+  iceShards = [];
+  for (let i = 0; i < 100; i++) {
+    let cx, cy;
+    const side = Math.floor(rng()*4);
+    if      (side===0){ cx=rng()*W;           cy=rng()*H*0.4;  }
+    else if (side===1){ cx=W - rng()*W*0.3;   cy=rng()*H;      }
+    else if (side===2){ cx=rng()*W;            cy=H-rng()*H*0.4;}
+    else              { cx=rng()*W*0.3;        cy=rng()*H;      }
+    const n=5+Math.floor(rng()*6), rad=45+rng()*110, pts=[];
+    for (let j=0;j<n;j++) {
+      const a=(j/n)*Math.PI*2+rng()*0.5, r=rad*(0.45+rng()*0.55);
+      pts.push([cx+Math.cos(a)*r, cy+Math.sin(a)*r]);
+    }
+    iceShards.push({ pts, op:0.28+rng()*0.5, thr:rng() });
+  }
+  iceShards.sort((a,b)=>a.thr-b.thr);
+}
+
+// ── Cookies ────────────────────────────────────────────────────────────────
+function getScores() {
+  const m=document.cookie.match(/(?:^|;\s*)np_sc=([^;]*)/);
+  if (!m) return [];
+  try { return JSON.parse(decodeURIComponent(m[1])); } catch { return []; }
+}
+function saveScores(arr) {
+  const exp=new Date(Date.now()+365*864e5).toUTCString();
+  document.cookie=`np_sc=${encodeURIComponent(JSON.stringify(arr))};expires=${exp};path=/`;
+}
+function isTopTen(sc) {
+  const s=getScores(); return s.length<10||sc>(s[s.length-1]?.score??0);
+}
+function addScore(name,sc) {
+  const s=getScores(); s.push({name,score:sc});
+  s.sort((a,b)=>b.score-a.score);
+  const t=s.slice(0,10); saveScores(t); return t;
+}
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ── State ──────────────────────────────────────────────────────────────────
+let running=false, playerLane=1, playerWX=0;
+let scoreVal=0, freeze=0, speed=2.6, frame=0, auroraT=0;
+let objects=[], spawnCD=80, flashT=0, floats=[], pendingScore=0;
+
+// ── Input ──────────────────────────────────────────────────────────────────
+const keys={};
+document.addEventListener('keydown', e=>{
+  if (keys[e.code]) return; keys[e.code]=true;
+  if (!running) return;
+  if (e.code==='ArrowLeft' ||e.code==='KeyA') move(-1);
+  if (e.code==='ArrowRight'||e.code==='KeyD') move(+1);
+});
+document.addEventListener('keyup', e=>{ keys[e.code]=false; });
+document.getElementById('tl').addEventListener('pointerdown',()=>running&&move(-1));
+document.getElementById('tr').addEventListener('pointerdown',()=>running&&move(+1));
+function move(d){ playerLane=Math.max(0,Math.min(2,playerLane+d)); }
+
+// ── UI ─────────────────────────────────────────────────────────────────────
+const show=id=>document.getElementById(id).classList.remove('hidden');
+const hide=id=>document.getElementById(id).classList.add('hidden');
+
+function startGame(){
+  hide('ov-menu'); hide('ov-over'); hide('ov-name');
+  playerLane=1; playerWX=0;
+  scoreVal=0; freeze=0; speed=2.6; frame=0;
+  objects=[]; spawnCD=80; flashT=0; floats=[];
+  regenFlakes(); running=true;
+}
+function doGameOver(){
+  running=false; pendingScore=scoreVal;
+  document.getElementById('final-score').textContent=pendingScore;
+  if (isTopTen(pendingScore)){ show('ov-name'); setTimeout(()=>document.getElementById('name-input').focus(),80); }
+  else { renderLB(null); show('ov-over'); }
+}
+function submitName(){
+  const nm=document.getElementById('name-input').value.trim()||'Anon';
+  addScore(nm,pendingScore);
+  hide('ov-name'); renderLB(pendingScore); show('ov-over');
+}
+function renderLB(hl){
+  const sc=getScores();
+  document.getElementById('lb-body').innerHTML=sc.length===0
+    ?'<tr><td colspan="3" style="color:#4a7090">Nog geen scores</td></tr>'
+    :sc.map((s,i)=>`<tr class="${s.score===hl?'hl':''}"><td>${i+1}</td><td>${esc(s.name)}</td><td>${s.score}</td></tr>`).join('');
+}
+
+document.getElementById('btn-start')  .addEventListener('click', startGame);
+document.getElementById('btn-restart').addEventListener('click', startGame);
+document.getElementById('btn-submit') .addEventListener('click', submitName);
+document.getElementById('name-input') .addEventListener('keydown',e=>{ if(e.key==='Enter')submitName(); });
+document.addEventListener('keydown',e=>{
+  if ((e.code==='Space'||e.code==='Enter')&&!document.getElementById('ov-menu').classList.contains('hidden')) startGame();
+});
+
+// ── Spawn ──────────────────────────────────────────────────────────────────
+function spawn(){
+  const type=Math.random()<0.38?'seal':'berg';
+  const lane=Math.floor(Math.random()*3);
+  if (objects.some(o=>o.lane===lane&&o.z>MAX_Z-110)) return;
+  objects.push({type, lane, z:MAX_Z-5, bob:Math.random()*Math.PI*2});
+}
+
+// ── Update ─────────────────────────────────────────────────────────────────
+function update(){
+  auroraT+=0.007; frame++;
+  speed=2.6+frame*0.0007;
+  if (frame%150===0) scoreVal++;
+
+  playerWX+=(LANE_X[playerLane]-playerWX)*0.17;
+
+  spawnCD-=speed;
+  if (spawnCD<=0){ spawn(); spawnCD=Math.max(55,150+Math.random()*100-frame*0.06); }
+
+  const threshold=Math.abs(LANE_X[0]-LANE_X[1])*0.55;
+  for (let i=objects.length-1;i>=0;i--){
+    const o=objects[i];
+    o.z-=speed; o.bob+=0.055;
+    if (o.z<-60){ objects.splice(i,1); continue; }
+    if (o.z<35&&o.z>-35){
+      const dx=Math.abs(playerWX-LANE_X[o.lane]);
+      if (dx<threshold){
+        if (o.type==='berg'){
+          objects.splice(i,1);
+          freeze=Math.min(1,freeze+0.24); flashT=18;
+          if (freeze>=1){ doGameOver(); return; }
+        } else {
+          const p=proj(LANE_X[o.lane],o.z);
+          floats.push({x:p.x, y:p.y-20, age:0});
+          objects.splice(i,1); scoreVal+=10;
+        }
+      }
+    }
+  }
+  floats=floats.filter(f=>f.age<55);
+  floats.forEach(f=>{f.age++;f.y-=1.8;});
+  flakes.forEach(f=>{
+    f.y+=f.sp/H; f.x+=f.dr/W;
+    if(f.y>1){f.y=-0.02;f.x=Math.random();}
+    if(f.x<0)f.x=1; if(f.x>1)f.x=0;
+  });
+  if(flashT>0)flashT--;
+}
+
+// ── Draw: sky + aurora ─────────────────────────────────────────────────────
+function drawSky(){
+  const g=ctx.createLinearGradient(0,0,0,HORIZON_Y);
+  g.addColorStop(0,'#04091a'); g.addColorStop(0.55,'#0c1a38'); g.addColorStop(1,'#182e4c');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,HORIZON_Y);
+
+  ctx.save();
+  stars.forEach(s=>{
+    ctx.globalAlpha=0.35+0.65*Math.abs(Math.sin(s.ph+auroraT*2.5));
+    ctx.fillStyle='#fff';
+    ctx.beginPath(); ctx.arc(s.fx*W, s.fy*HORIZON_Y, s.r, 0, Math.PI*2); ctx.fill();
+  });
+  ctx.restore();
+
+  [{c1:'#00ff88',c2:'#00cc55',ph:0},{c1:'#22ffcc',c2:'#00aaaa',ph:1.4},{c1:'#aa44ff',c2:'#6600bb',ph:2.8}]
+  .forEach(b=>{
+    ctx.save();
+    ctx.globalAlpha=0.10+0.07*Math.sin(auroraT+b.ph);
+    const g2=ctx.createLinearGradient(0,HORIZON_Y*0.05,0,HORIZON_Y*0.92);
+    g2.addColorStop(0,'transparent'); g2.addColorStop(0.35,b.c1);
+    g2.addColorStop(0.72,b.c2);      g2.addColorStop(1,'transparent');
+    ctx.fillStyle=g2;
+    ctx.beginPath();
+    for(let i=0;i<=50;i++){
+      const x=(i/50)*W;
+      const y=HORIZON_Y*(0.12+b.ph*0.06)
+             +28*Math.sin(x/130+auroraT+b.ph)
+             +12*Math.sin(x/65+auroraT*1.4+b.ph*0.6);
+      i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    }
+    ctx.lineTo(W,HORIZON_Y*0.92); ctx.lineTo(0,HORIZON_Y*0.92);
+    ctx.closePath(); ctx.fill(); ctx.restore();
+  });
+}
+
+// ── Draw: horizon icebergs ─────────────────────────────────────────────────
+function drawHorizon(){
+  [[0.04,0.07],[0.13,0.045],[0.22,0.06],[0.76,0.05],[0.86,0.075],[0.93,0.04],[0.97,0.055]]
+  .forEach(([fx,fh])=>{
+    const cx=fx*W, bh=fh*H, bw=bh*1.4;
+    ctx.fillStyle='#4a7ea8';
+    ctx.beginPath();
+    ctx.moveTo(cx-bw,HORIZON_Y); ctx.lineTo(cx-bw*0.5,HORIZON_Y-bh*0.35);
+    ctx.lineTo(cx,HORIZON_Y-bh); ctx.lineTo(cx+bw*0.45,HORIZON_Y-bh*0.45);
+    ctx.lineTo(cx+bw,HORIZON_Y); ctx.closePath(); ctx.fill();
+  });
+}
+
+// ── Draw: ground ───────────────────────────────────────────────────────────
+function drawGround(){
+  const g=ctx.createLinearGradient(0,HORIZON_Y,0,H);
+  g.addColorStop(0,'#78b6de'); g.addColorStop(0.12,'#b8d8f2');
+  g.addColorStop(0.5,'#daecff'); g.addColorStop(1,'#eef5ff');
+  ctx.fillStyle=g; ctx.fillRect(0,HORIZON_Y,W,H-HORIZON_Y);
+
+  ctx.strokeStyle='rgba(140,200,240,0.35)'; ctx.lineWidth=1;
+  for(let x=-8;x<=8;x++){
+    const n=proj(x*75,0), f=proj(x*75,MAX_Z);
+    ctx.beginPath(); ctx.moveTo(n.x,n.y); ctx.lineTo(f.x,f.y); ctx.stroke();
+  }
+  for(let z=40;z<MAX_Z;z+=65){
+    const l=proj(-700,z), r=proj(700,z);
+    ctx.beginPath(); ctx.moveTo(l.x,l.y); ctx.lineTo(r.x,r.y); ctx.stroke();
+  }
+  ctx.strokeStyle='rgba(70,150,220,0.55)'; ctx.lineWidth=2;
+  const d=Math.abs(LANE_X[0]-LANE_X[1])/2;
+  [-d,d].forEach(wx=>{
+    const n=proj(wx,0), f=proj(wx,MAX_Z);
+    ctx.beginPath(); ctx.moveTo(n.x,n.y); ctx.lineTo(f.x,f.y); ctx.stroke();
+  });
+}
+
+// ── Draw: iceberg ──────────────────────────────────────────────────────────
+function drawBerg(cx,cy,s){
+  ctx.save();
+  ctx.globalAlpha=0.22; ctx.fillStyle='#003366';
+  ctx.beginPath(); ctx.ellipse(cx,cy+s*0.06,s*0.6,s*0.1,0,0,Math.PI*2); ctx.fill();
+  ctx.globalAlpha=1;
+  ctx.fillStyle='#3a78a8';
+  ctx.beginPath(); ctx.moveTo(cx-s*0.58,cy); ctx.lineTo(cx+s*0.58,cy);
+  ctx.lineTo(cx+s*0.38,cy+s*0.22); ctx.lineTo(cx-s*0.38,cy+s*0.22); ctx.closePath(); ctx.fill();
+  ctx.fillStyle='#a8d2ec';
+  ctx.beginPath(); ctx.moveTo(cx,cy-s*0.78); ctx.lineTo(cx+s*0.28,cy-s*0.28);
+  ctx.lineTo(cx+s*0.52,cy); ctx.lineTo(cx-s*0.52,cy); ctx.lineTo(cx-s*0.28,cy-s*0.28); ctx.closePath(); ctx.fill();
+  ctx.fillStyle='rgba(210,236,255,0.55)';
+  ctx.beginPath(); ctx.moveTo(cx-s*0.05,cy-s*0.78); ctx.lineTo(cx+s*0.2,cy-s*0.28);
+  ctx.lineTo(cx-s*0.08,cy-s*0.22); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle='#68acca'; ctx.lineWidth=Math.max(1,s*0.035);
+  ctx.beginPath(); ctx.moveTo(cx,cy-s*0.78); ctx.lineTo(cx+s*0.28,cy-s*0.28);
+  ctx.lineTo(cx+s*0.52,cy); ctx.lineTo(cx-s*0.52,cy); ctx.lineTo(cx-s*0.28,cy-s*0.28); ctx.closePath(); ctx.stroke();
+  ctx.restore();
+}
+
+// ── Draw: seal ─────────────────────────────────────────────────────────────
+function drawSeal(cx,cy,s){
+  ctx.save();
+  ctx.globalAlpha=0.2; ctx.fillStyle='#001a33';
+  ctx.beginPath(); ctx.ellipse(cx,cy+s*0.08,s*0.38,s*0.08,0,0,Math.PI*2); ctx.fill();
+  ctx.globalAlpha=1;
+  ctx.fillStyle='#688ea8';
+  ctx.beginPath(); ctx.ellipse(cx,cy,s*0.27,s*0.48,0,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(cx,cy-s*0.46,s*0.22,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#1a1a1a';
+  ctx.beginPath(); ctx.arc(cx-s*0.09,cy-s*0.5,s*0.065,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(cx+s*0.09,cy-s*0.5,s*0.065,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#fff';
+  ctx.beginPath(); ctx.arc(cx-s*0.07,cy-s*0.52,s*0.024,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(cx+s*0.11,cy-s*0.52,s*0.024,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#445566';
+  ctx.beginPath(); ctx.ellipse(cx,cy-s*0.38,s*0.06,s*0.04,0,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#587890';
+  ctx.beginPath(); ctx.ellipse(cx-s*0.32,cy+s*0.05,s*0.17,s*0.08,-0.55,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(cx+s*0.32,cy+s*0.05,s*0.17,s*0.08, 0.55,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+}
+
+// ── Draw: polar bear ───────────────────────────────────────────────────────
+function drawBear(cx,cy,s){
+  ctx.save();
+  ctx.globalAlpha=0.32; ctx.fillStyle='#000e2a';
+  ctx.beginPath(); ctx.ellipse(cx,cy+s*0.62,s*0.48,s*0.1,0,0,Math.PI*2); ctx.fill();
+  ctx.globalAlpha=1;
+
+  const sw=Math.sin(frame*0.17)*0.45;
+  ctx.fillStyle='#d8e8ff';
+  ctx.save(); ctx.translate(cx-s*0.4,cy-s*0.05); ctx.rotate(-0.45+sw);
+  ctx.beginPath(); ctx.ellipse(0,0,s*0.13,s*0.3,0,0,Math.PI*2); ctx.fill(); ctx.restore();
+  ctx.save(); ctx.translate(cx+s*0.4,cy-s*0.05); ctx.rotate(0.45-sw);
+  ctx.beginPath(); ctx.ellipse(0,0,s*0.13,s*0.3,0,0,Math.PI*2); ctx.fill(); ctx.restore();
+
+  ctx.fillStyle='#e0eeff'; ctx.shadowColor='#99bbdd'; ctx.shadowBlur=10;
+  ctx.beginPath(); ctx.ellipse(cx,cy+s*0.1,s*0.4,s*0.52,0,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(cx,cy-s*0.42,s*0.33,0,Math.PI*2); ctx.fill();
+  ctx.shadowBlur=0;
+
+  [[cx-s*0.21,cy-s*0.7],[cx+s*0.21,cy-s*0.7]].forEach(([ex,ey])=>{
+    ctx.fillStyle='#e0eeff'; ctx.beginPath(); ctx.arc(ex,ey,s*0.13,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#ffaac4'; ctx.beginPath(); ctx.arc(ex,ey,s*0.07,0,Math.PI*2); ctx.fill();
+  });
+
+  ctx.fillStyle='#2255aa';
+  ctx.beginPath(); ctx.ellipse(cx,cy-s*0.19,s*0.35,s*0.1,0,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#4477ee';
+  ctx.beginPath(); ctx.ellipse(cx+s*0.28,cy-s*0.12,s*0.1,s*0.15,0.4,0,Math.PI*2); ctx.fill();
+
+  ctx.fillStyle='#111122';
+  ctx.beginPath(); ctx.arc(cx-s*0.12,cy-s*0.48,s*0.055,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(cx+s*0.12,cy-s*0.48,s*0.055,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#fff';
+  ctx.beginPath(); ctx.arc(cx-s*0.10,cy-s*0.5,s*0.02,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(cx+s*0.14,cy-s*0.5,s*0.02,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#111133';
+  ctx.beginPath(); ctx.ellipse(cx,cy-s*0.36,s*0.07,s*0.05,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+}
+
+// ── Draw: objects ──────────────────────────────────────────────────────────
+function drawObjects(){
+  [...objects].sort((a,b)=>b.z-a.z).forEach(o=>{
+    const p=proj(LANE_X[o.lane],o.z);
+    if(p.y>H+60||p.y<HORIZON_Y)return;
+    const bob=Math.sin(o.bob)*4*p.s, sz=p.s*115;
+    o.type==='berg'?drawBerg(p.x,p.y+bob,sz):drawSeal(p.x,p.y+bob,sz);
+  });
+}
+
+// ── Draw: freeze overlay ───────────────────────────────────────────────────
+function drawFreeze(){
+  if(freeze<=0)return;
+  ctx.save();
+  iceShards.forEach(sh=>{
+    if(sh.thr>freeze)return;
+    const prog=Math.min(1,(freeze-sh.thr)/0.22);
+    ctx.globalAlpha=sh.op*prog;
+    ctx.fillStyle='#90c8f0'; ctx.strokeStyle='#c0e4ff'; ctx.lineWidth=1;
+    ctx.beginPath();
+    sh.pts.forEach(([px,py],i)=>{
+      const ox=px+(px-W/2)*(1-prog)*0.6, oy=py+(py-H/2)*(1-prog)*0.6;
+      i===0?ctx.moveTo(ox,oy):ctx.lineTo(ox,oy);
+    });
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+  });
+  if(freeze>0.08){
+    const vg=ctx.createRadialGradient(W/2,H/2,H*0.08,W/2,H/2,H*0.82);
+    vg.addColorStop(0,'transparent'); vg.addColorStop(1,`rgba(88,172,240,${freeze*0.6})`);
+    ctx.globalAlpha=1; ctx.fillStyle=vg; ctx.fillRect(0,0,W,H);
+  }
+  if(freeze>0.58){
+    ctx.globalAlpha=(freeze-0.58)*0.4; ctx.fillStyle='#70b8e8'; ctx.fillRect(0,0,W,H);
+  }
+  ctx.restore();
+  if(flashT>0){
+    ctx.save(); ctx.globalAlpha=(flashT/18)*0.3;
+    ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,W,H); ctx.restore();
+  }
+}
+
+// ── Draw: HUD ──────────────────────────────────────────────────────────────
+function rRect(x,y,w,h,r){
+  if(ctx.roundRect){ctx.beginPath();ctx.roundRect(x,y,w,h,r);return;}
+  ctx.beginPath();
+  ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+  ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+  ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y); ctx.closePath();
+}
+function drawHUD(){
+  ctx.save();
+  const fs=Math.round(Math.max(18,H*0.038));
+  ctx.font=`700 ${fs}px 'Segoe UI',sans-serif`;
+  ctx.textAlign='left'; ctx.lineWidth=3; ctx.strokeStyle='rgba(0,0,0,0.65)';
+  ctx.fillStyle='#ffee44';
+  ctx.strokeText(`⭐ ${scoreVal}`,20,46); ctx.fillText(`⭐ ${scoreVal}`,20,46);
+
+  const bw=Math.min(W*0.24,200), bh=15, bx=W-bw-18, by=18;
+  ctx.font=`700 ${Math.round(H*0.024)}px 'Segoe UI',sans-serif`;
+  ctx.fillStyle='#99ccff'; ctx.textAlign='right';
+  ctx.fillText('❄️ Bevriezing',W-18,by-4);
+  ctx.fillStyle='rgba(0,10,40,0.55)'; rRect(bx,by,bw,bh,7); ctx.fill();
+  if(freeze>0){
+    const g=ctx.createLinearGradient(bx,0,bx+bw,0);
+    g.addColorStop(0,'#44aaff'); g.addColorStop(1,'#00ddff');
+    ctx.fillStyle=g; rRect(bx,by,bw*freeze,bh,7); ctx.fill();
+  }
+  ctx.strokeStyle='#66bbff'; ctx.lineWidth=2; rRect(bx,by,bw,bh,7); ctx.stroke();
+
+  // Floating +10 texts
+  floats.forEach(f=>{
+    ctx.save(); ctx.globalAlpha=1-f.age/55;
+    ctx.font='900 22px "Segoe UI",sans-serif'; ctx.textAlign='center';
+    ctx.strokeStyle='rgba(0,0,0,0.6)'; ctx.lineWidth=3;
+    ctx.strokeText('+10',f.x,f.y); ctx.fillStyle='#ffdd44'; ctx.fillText('+10',f.x,f.y);
+    ctx.restore();
+  });
+
+  // Snow
+  ctx.fillStyle='rgba(255,255,255,0.7)';
+  flakes.forEach(f=>{ctx.beginPath();ctx.arc(f.x*W,f.y*H,f.r,0,Math.PI*2);ctx.fill();});
+  ctx.restore();
+}
+
+// ── Main loop ──────────────────────────────────────────────────────────────
+function loop(){
+  requestAnimationFrame(loop);
+  if(!running) auroraT+=0.006;
+  ctx.clearRect(0,0,W,H);
+  drawSky(); drawHorizon(); drawGround();
+  if(running){
+    update(); drawObjects();
+    const px=W/2+playerWX, bob=Math.sin(frame*0.18)*5;
+    drawBear(px, GROUND_Y+bob, Math.min(H*0.09,72));
+    drawFreeze(); drawHUD();
+  }
+}
+
+resize();
+loop();
+</script>
+</body>
+</html>
