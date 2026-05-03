@@ -250,17 +250,59 @@ let scoreVal=0, freeze=0, speed=2.6, frame=0, auroraT=0;
 let objects=[], spawnCD=80, flashT=0, floats=[], pendingScore=0;
 
 // ── Input ──────────────────────────────────────────────────────────────────
-const keys={};
-document.addEventListener('keydown', e=>{
-  if (keys[e.code]) return; keys[e.code]=true;
+const keys = {};
+
+// Keyboard controls
+document.addEventListener('keydown', e => {
+  if (keys[e.code]) return;
+  keys[e.code] = true;
+
   if (!running) return;
-  if (e.code==='ArrowLeft' ||e.code==='KeyA') move(-1);
-  if (e.code==='ArrowRight'||e.code==='KeyD') move(+1);
+
+  if (e.code === 'ArrowLeft' || e.code === 'KeyA') {
+    move(-1);
+  }
+
+  if (e.code === 'ArrowRight' || e.code === 'KeyD') {
+    move(+1);
+  }
 });
-document.addEventListener('keyup', e=>{ keys[e.code]=false; });
-document.getElementById('tl').addEventListener('pointerdown',()=>running&&move(-1));
-document.getElementById('tr').addEventListener('pointerdown',()=>running&&move(+1));
-function move(d){ playerLane=Math.max(0,Math.min(2,playerLane+d)); }
+
+document.addEventListener('keyup', e => {
+  keys[e.code] = false;
+});
+
+// Existing touch buttons
+document.getElementById('tl').addEventListener('pointerdown', () => {
+  if (running) move(-1);
+});
+
+document.getElementById('tr').addEventListener('pointerdown', () => {
+  if (running) move(+1);
+});
+
+// Full-screen tablet touch controls
+document.addEventListener('pointerdown', e => {
+  if (!running) return;
+
+  // Ignore touches on UI buttons
+  if (e.target.closest('#tl') || e.target.closest('#tr')) return;
+
+  const screenMiddle = window.innerWidth / 2;
+
+  if (e.clientX < screenMiddle) {
+    move(-1); // left half of screen
+  } else {
+    move(+1); // right half of screen
+  }
+});
+
+// Prevent accidental scrolling/zooming on tablets
+document.body.style.touchAction = 'none';
+
+function move(d) {
+  playerLane = Math.max(0, Math.min(2, playerLane + d));
+}
 
 // ── UI ─────────────────────────────────────────────────────────────────────
 const show=id=>document.getElementById(id).classList.remove('hidden');
