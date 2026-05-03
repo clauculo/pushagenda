@@ -91,9 +91,72 @@
     }
     .tbtn:active { background: rgba(80,160,255,0.55); }
     @media (hover: hover) { #touch-ctrl { display: none; } }
+
+    /* ── GAMECENTER NAV ── */
+    .gc-nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 50px;
+      z-index: 9999;
+      background: linear-gradient(90deg, rgba(5,15,45,0.95), rgba(0,40,90,0.95));
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      box-shadow: 0 2px 12px rgba(80,180,255,0.3);
+      border-bottom: 1px solid rgba(100,180,255,0.3);
+    }
+    .gc-logo {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #88ddff;
+      letter-spacing: 1px;
+      text-shadow: 0 0 12px #44aaff;
+    }
+    .gc-menu-btn {
+      background: rgba(80,160,255,0.2);
+      border: 2px solid rgba(100,180,255,0.45);
+      border-radius: 8px;
+      color: #88ddff;
+      font-size: 1.4rem;
+      width: 40px; height: 36px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    .gc-menu-btn:hover { background: rgba(80,160,255,0.4); }
+    .gc-dropdown {
+      display: none;
+      position: absolute;
+      top: 50px; right: 0;
+      background: linear-gradient(180deg, rgba(5,15,45,0.97), rgba(0,30,70,0.97));
+      border: 1px solid rgba(100,180,255,0.3);
+      border-top: none;
+      border-radius: 0 0 16px 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      min-width: 200px;
+      overflow: hidden;
+    }
+    .gc-dropdown.open { display: block; }
+    .gc-dropdown a {
+      display: block;
+      padding: 12px 20px;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      font-weight: 600;
+      font-size: 1rem;
+      color: #88ddff;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(100,180,255,0.15);
+      transition: background 0.15s;
+    }
+    .gc-dropdown a:last-child { border-bottom: none; }
+    .gc-dropdown a:hover { background: rgba(80,160,255,0.15); color: #cceeff; }
   </style>
 </head>
 <body>
+{% include '_nav.html.twig' %}
 <canvas id="c"></canvas>
 
 <div id="touch-ctrl">
@@ -248,6 +311,7 @@ function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').rep
 let running=false, playerLane=1, playerWX=0;
 let scoreVal=0, freeze=0, speed=2.6, frame=0, auroraT=0;
 let objects=[], spawnCD=80, flashT=0, floats=[], pendingScore=0;
+let diffLevel=1, levelUpT=0;
 
 // ── Input ──────────────────────────────────────────────────────────────────
 const keys = {};
@@ -313,6 +377,7 @@ function startGame(){
   playerLane=1; playerWX=0;
   scoreVal=0; freeze=0; speed=2.6; frame=0;
   objects=[]; spawnCD=80; flashT=0; floats=[];
+  diffLevel=1; levelUpT=0;
   regenFlakes(); running=true;
 }
 function doGameOver(){
@@ -341,9 +406,16 @@ document.addEventListener('keydown',e=>{
   if ((e.code==='Space'||e.code==='Enter')&&!document.getElementById('ov-menu').classList.contains('hidden')) startGame();
 });
 
+// ── Difficulty ─────────────────────────────────────────────────────────────
+const DIFF_STEP = 30;
+function checkDifficulty() {
+  const newLevel = 1 + Math.floor(scoreVal / DIFF_STEP);
+  if (newLevel > diffLevel) { diffLevel = newLevel; levelUpT = 120; }
+}
+
 // ── Spawn ──────────────────────────────────────────────────────────────────
 function spawn(){
-  const type=Math.random()<0.38?'seal':'berg';
+  const type=Math.random()<Math.max(0.12,0.38-(diffLevel-1)*0.04)?'seal':'berg';
   const lane=Math.floor(Math.random()*3);
   if (objects.some(o=>o.lane===lane&&o.z>MAX_Z-110)) return;
   objects.push({type, lane, z:MAX_Z-5, bob:Math.random()*Math.PI*2});
@@ -352,13 +424,13 @@ function spawn(){
 // ── Update ─────────────────────────────────────────────────────────────────
 function update(){
   auroraT+=0.007; frame++;
-  speed=2.6+frame*0.0007;
-  if (frame%150===0) scoreVal++;
+  speed=(2.6+(diffLevel-1)*0.5)+frame*0.0007;
+  if (frame%150===0) { scoreVal++; checkDifficulty(); }
 
   playerWX+=(LANE_X[playerLane]-playerWX)*0.17;
 
   spawnCD-=speed;
-  if (spawnCD<=0){ spawn(); spawnCD=Math.max(55,150+Math.random()*100-frame*0.06); }
+  if (spawnCD<=0){ spawn(); spawnCD=Math.max(Math.max(25,55-(diffLevel-1)*5),150+Math.random()*100-frame*0.06-(diffLevel-1)*15); }
 
   const threshold=Math.abs(LANE_X[0]-LANE_X[1])*0.55;
   for (let i=objects.length-1;i>=0;i--){
@@ -375,7 +447,7 @@ function update(){
         } else {
           const p=proj(LANE_X[o.lane],o.z);
           floats.push({x:p.x, y:p.y-20, age:0});
-          objects.splice(i,1); scoreVal+=10;
+          objects.splice(i,1); scoreVal+=10; checkDifficulty();
         }
       }
     }
@@ -603,6 +675,9 @@ function drawHUD(){
   ctx.textAlign='left'; ctx.lineWidth=3; ctx.strokeStyle='rgba(0,0,0,0.65)';
   ctx.fillStyle='#ffee44';
   ctx.strokeText(`⭐ ${scoreVal}`,20,46); ctx.fillText(`⭐ ${scoreVal}`,20,46);
+  ctx.font=`700 ${Math.round(fs*0.65)}px 'Segoe UI',sans-serif`;
+  ctx.fillStyle='#88ddff';
+  ctx.strokeText(`LVL ${diffLevel}`,20,46+fs*0.85); ctx.fillText(`LVL ${diffLevel}`,20,46+fs*0.85);
 
   const bw=Math.min(W*0.24,200), bh=15, bx=W-bw-18, by=18;
   ctx.font=`700 ${Math.round(H*0.024)}px 'Segoe UI',sans-serif`;
@@ -624,6 +699,23 @@ function drawHUD(){
     ctx.strokeText('+10',f.x,f.y); ctx.fillStyle='#ffdd44'; ctx.fillText('+10',f.x,f.y);
     ctx.restore();
   });
+
+  // Level-up flash
+  if (levelUpT > 0) {
+    const alpha = levelUpT > 90 ? 1 : levelUpT / 90;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    const lfs = Math.round(H * 0.07);
+    ctx.font = `900 ${lfs}px 'Segoe UI',sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.lineWidth = 5;
+    ctx.strokeStyle = 'rgba(0,20,60,0.85)';
+    ctx.fillStyle = '#ffdd44';
+    ctx.strokeText(`⚡ Level ${diffLevel}!`, W/2, H/2 - lfs*0.2);
+    ctx.fillText(`⚡ Level ${diffLevel}!`, W/2, H/2 - lfs*0.2);
+    ctx.restore();
+    levelUpT--;
+  }
 
   // Snow
   ctx.fillStyle='rgba(255,255,255,0.7)';

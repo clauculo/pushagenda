@@ -1,0 +1,25 @@
+<nav class="gc-nav">
+  <span class="gc-logo">GameCenter</span>
+  <button class="gc-menu-btn" onclick="toggleGcMenu()" aria-label="Menu">&#9776;</button>
+  <div class="gc-dropdown" id="gc-dropdown">
+    <a href="/">Home</a>
+    <a href="/wouter">Wouter</a>
+    <a href="/daphne">Daphne</a>
+    <a href="/daphne_game">Daphne's Game</a>
+    <a href="/lisanne_game">Lisanne's Game</a>
+    <a href="/aline">Aline</a>
+    <a href="/daphne2">Daphne 2</a>
+    <a href="/pushagenda">Pushagenda</a>
+  </div>
+</nav>
+
+<script>
+  function toggleGcMenu() {
+    document.getElementById('gc-dropdown').classList.toggle('open');
+  }
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.gc-nav')) {
+      document.getElementById('gc-dropdown').classList.remove('open');
+    }
+  });
+</script>
