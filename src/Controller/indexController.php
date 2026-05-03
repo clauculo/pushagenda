@@ -27,13 +27,13 @@ class indexController extends AbstractController
     {
         return $this->render('index2.html.twig');
     }
-    #[Route('/daphne_name', name: 'daphne_game.get')]
+    #[Route('/daphne_game', name: 'daphne_game.get')]
     public function daphneGame()
     {
         return $this->render('daphne_game.html.twig');
     }
 
-    #[Route('/lisanne_name', name: 'lisanne_game.get')]
+    #[Route('/lisanne_game', name: 'lisanne_game.get')]
     public function lisanneGame()
     {
         return $this->render('lisanne_game.html.twig');
