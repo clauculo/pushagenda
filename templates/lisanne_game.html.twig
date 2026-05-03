@@ -948,9 +948,8 @@
         emojiEl.textContent    = q.word.emoji;
         emojiEl.style.display  = 'block';
         letterEl.style.display = 'none';
-        // Onderstreep de laatste letter als hint
         const w = q.word.word;
-        wordLbl.innerHTML = w.slice(0, -1) + `<span class="last-letter-hint">${w.slice(-1)}</span>`;
+        wordLbl.innerHTML = w.slice(0, -1) + `<span class="blank-slot">?</span>`;
         prompt.textContent = 'Met welke letter eindigt dit woord?';
 
       } else if (q.type === 'missing') {
